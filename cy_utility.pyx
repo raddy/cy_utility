@@ -36,14 +36,20 @@ def assymetrical_univariate_kf(np.ndarray[double, ndim=1] raw, double seed, doub
         double xhatprev,p=0,pprev=q,k=0,k2=0,change,last_valid
         np.ndarray[DTYPE_t, ndim=2] res = np.zeros([nr,2], dtype=np.double) * np.NaN
     xhatprev = seed
-    res[0] = seed
+    res[0][0] = seed
+    res[0][1] = seed
     for i from 1 <= i < nr:
         if not np.isnan(raw[i]):
             change = raw[i] - xhatprev
-            res[i][0] = xhatprev + k*change
-            res[i][1] = xhatprev + k2*change
+            if change>0:
+                res[i][0] = xhatprev + k*change
+                res[i][1] = xhatprev + k2*change
+                xhatprev = res[i][0]
+            else:
+                res[i][0] = xhatprev + k2*change
+                res[i][1] = xhatprev + k*change
+                xhatprev = res[i][1]
             p = (1-k)*pprev
-            xhatprev = res[i]
             pprev = p + q
             k = pprev/(pprev+r)
             k2 = pprev/(pprev+r*ratio)
